@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lustgrow — ML Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060608;--surface:#0d0d12;--card:#111118;--border:#1c1c28;--border2:#252535;--accent:#ffe135;--accent-dim:rgba(255,225,53,0.08);--blue:#4f8ef7;--blue-dim:rgba(79,142,247,0.08);--green:#00e09e;--green-dim:rgba(0,224,158,0.08);--red:#ff4d6a;--red-dim:rgba(255,77,106,0.08);--orange:#ff8c42;--purple:#b57aff;--text:#e2e2ee;--text2:#8888aa;--text3:#44445a;--font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.4;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;border-bottom:1px solid var(--border);background:rgba(6,6,8,0.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;gap:8px;}
+.logo{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);white-space:nowrap;}
+.topbar-right{display:flex;align-items:center;gap:5px;}
+.badge{font-size:9px;font-family:var(--mono);padding:3px 7px;font-weight:500;letter-spacing:1px;text-transform:uppercase;}
+.badge-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(79,142,247,0.2);}
+.badge-yellow{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(255,225,53,0.2);}
+.badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,224,158,0.2);}
+.badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,106,0.2);}
+.badge-orange{background:rgba(255,140,66,0.1);color:var(--orange);border:1px solid rgba(255,140,66,0.2);}
+main{padding:20px 14px;max-width:1100px;margin:0 auto;}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.my-user-banner{background:var(--surface);border:1px solid var(--border2);padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.my-user-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.my-user-val{font-size:13px;font-weight:700;color:var(--green);}
+.my-user-edit{font-family:var(--mono);font-size:10px;color:var(--text3);cursor:pointer;text-decoration:underline;margin-left:auto;}
+.my-user-edit:hover{color:var(--text2);}
+.step-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;}
+.step-num{width:24px;height:24px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:var(--mono);color:var(--text2);flex-shrink:0;margin-top:2px;}
+.step-title{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
+.step-sub{font-size:10px;color:var(--text2);margin-top:3px;font-family:var(--mono);}
+.competitor-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+@media(max-width:480px){.competitor-list{grid-template-columns:1fr;}}
+.competitor-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);padding:9px 11px;transition:border-color 0.15s;}
+.competitor-item.loading{border-color:var(--blue);}.competitor-item.done{border-color:rgba(0,224,158,0.3);}.competitor-item.error{border-color:rgba(255,77,106,0.3);}
+.comp-input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;min-width:0;}
+.comp-input::placeholder{color:var(--text3);}
+.comp-status{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background 0.2s;}
+.competitor-item.loading .comp-status{background:var(--blue);animation:pulse 1s infinite;}
+.competitor-item.done .comp-status{background:var(--green);}.competitor-item.error .comp-status{background:var(--red);}
+.comp-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;padding:0 2px;}.comp-remove:hover{color:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.controls{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
+.btn{font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:9px 16px;cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#000;}.btn-primary:hover{background:#fff176;}.btn-primary:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);}.btn-ghost:hover{border-color:var(--text2);color:var(--text);}
+.progress-bar-wrap{height:2px;background:var(--border);margin-bottom:7px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--accent);transition:width 0.4s ease;}
+.progress-text{font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:18px;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:22px;}
+@media(max-width:380px){.stats-grid{grid-template-columns:1fr 1fr;}}
+.stat-cell{background:var(--card);padding:14px;}
+.stat-val{font-size:20px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px;}
+.stat-val.yellow{color:var(--accent);}.stat-val.blue{color:var(--blue);}.stat-val.green{color:var(--green);}.stat-val.orange{color:var(--orange);}.stat-val.purple{color:var(--purple);}
+.stat-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{font-family:var(--font);font-size:11px;font-weight:600;padding:10px 14px;background:none;border:none;color:var(--text3);cursor:pointer;transition:all 0.15s;border-bottom:2px solid transparent;white-space:nowrap;}
+.tab-btn:hover{color:var(--text2);}.tab-btn.active{color:var(--text);border-bottom-color:var(--accent);}
+.ai-panel{background:var(--surface);border:1px solid var(--border2);padding:18px;margin-bottom:22px;position:relative;overflow:hidden;}
+.ai-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),var(--blue),transparent);}
+.ai-label{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+.ai-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+.ai-label-text{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--green);}
+.ai-section{margin-bottom:12px;padding:12px;background:var(--card);border-left:3px solid var(--accent);}
+.ai-section.blue{border-left-color:var(--blue);}.ai-section.green{border-left-color:var(--green);}.ai-section.purple{border-left-color:var(--purple);}.ai-section.orange{border-left-color:var(--orange);}
+.ai-section-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;color:var(--text);}
+.ai-section-body{font-size:12px;line-height:1.7;color:var(--text2);}
+.ai-section-body strong{color:var(--accent);}
+.cursor{display:inline-block;width:2px;height:12px;background:var(--accent);vertical-align:middle;animation:blink 0.8s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.products-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.products-table{width:100%;border-collapse:collapse;font-size:11px;}
+.products-table th{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+.products-table th:hover{color:var(--text2);}.products-table th.sorted{color:var(--accent);}
+.products-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.products-table tr:hover td{background:rgba(255,255,255,0.01);}
+.td-title{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.td-seller{font-family:var(--mono);color:var(--text2);font-size:9px;}
+.td-price-comp{font-weight:700;color:var(--blue);}
+.priority-bar{display:flex;align-items:center;gap:5px;}
+.priority-fill{height:3px;border-radius:2px;min-width:2px;}
+.comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:16px;}
+@media(max-width:480px){.comparison-grid{grid-template-columns:1fr;}}
+.comp-card{background:var(--card);padding:14px;}
+.comp-card-title{font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.comp-card-val{font-size:18px;font-weight:700;letter-spacing:-0.5px;}
+.price-gap-good{color:var(--green);}.price-gap-bad{color:var(--red);}.price-gap-ok{color:var(--accent);}
+.alerts-list{display:flex;flex-direction:column;gap:7px;}
+.alert-item{background:var(--card);border:1px solid var(--border);padding:12px;display:flex;gap:10px;align-items:flex-start;}
+.alert-item.new{border-color:rgba(0,224,158,0.3);}.alert-item.price{border-color:rgba(255,77,106,0.3);}
+.alert-item-icon{font-size:16px;flex-shrink:0;}
+.alert-item-body{flex:1;min-width:0;}
+.alert-item-title{font-size:12px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.alert-item-sub{font-size:10px;color:var(--text2);font-family:var(--mono);}
+.alert-item-time{font-size:9px;color:var(--text3);font-family:var(--mono);flex-shrink:0;}
+.keywords-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.kw-chip{font-family:var(--mono);font-size:11px;padding:5px 11px;border:1px solid;display:flex;align-items:center;gap:5px;}
+.kw-count{font-size:9px;opacity:0.5;}
+.sellers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--border);}
+.seller-card{background:var(--card);padding:14px;}
+.seller-name{font-size:13px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.seller-stats{margin-top:9px;display:flex;flex-direction:column;gap:5px;}
+.seller-stat-row{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);}
+.seller-stat-row span:first-child{color:var(--text3);}
+.export-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px;}
+.export-card{background:var(--surface);border:1px solid var(--border);padding:14px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.export-card:hover{border-color:var(--border2);background:var(--card);transform:translateY(-2px);}
+.export-icon{font-size:22px;margin-bottom:7px;}.export-name{font-size:12px;font-weight:600;margin-bottom:2px;}.export-desc{font-size:9px;color:var(--text2);font-family:var(--mono);}
+.empty-state{text-align:center;padding:50px 20px;border:1px solid var(--border);}
+.empty-icon{font-size:32px;margin-bottom:10px;}.empty-title{font-size:14px;font-weight:600;margin-bottom:5px;}.empty-sub{font-size:11px;color:var(--text2);font-family:var(--mono);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+@media(min-width:600px){.modal-overlay{align-items:center;padding:20px;}}
+.modal{background:var(--surface);border:1px solid var(--border);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-size:13px;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;line-height:1;}
+.modal-body{padding:18px;}
+::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo">Lustgrow</span>
+  <div class="topbar-right">
+    <span class="badge badge-blue">MLA</span>
+    <span class="badge badge-yellow" id="date-badge">MAR 2026</span>
+    <span class="badge badge-green" id="status-badge">LISTO</span>
+  </div>
+</div>
+<main>
+  <div class="my-user-banner">
+    <div><div class="my-user-label">tu cuenta ML</div><div class="my-user-val" id="my-user-display">LUST GROWSHOP</div></div>
+    <span class="my-user-edit" onclick="editMyUser()">cambiar</span>
+  </div>
+  <div id="input-section">
+    <div class="step-header">
+      <div class="step-num">01</div>
+      <div><div class="step-title">Competidores</div><div class="step-sub">// se guardan automáticamente — hasta 15</div></div>
+    </div>
+    <div class="competitor-list" id="competitor-list"></div>
+    <div class="controls">
+      <button class="btn btn-ghost" onclick="addCompetitor()">+ Agregar</button>
+      <button class="btn btn-ghost" onclick="clearAll()">Limpiar</button>
+      <button class="btn btn-primary" onclick="runAnalysis()" id="btn-analyze">Analizar →</button>
+    </div>
+    <div style="display:none" id="progress-wrap">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-text" id="progress-text">Iniciando...</div>
+    </div>
+  </div>
+  <div id="results-section" style="display:none;">
+    <div class="ai-panel">
+      <div class="ai-label"><div class="ai-dot"></div><span class="ai-label-text">Estrategia IA para superar a la competencia</span></div>
+      <div id="ai-content"><span style="font-family:var(--mono);font-size:11px;color:var(--text3);">Generando estrategia... <span class="cursor"></span></span></div>
+    </div>
+    <div class="section-label">// resumen competencia</div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('products',this)">Productos top</button>
+      <button class="tab-btn" onclick="switchTab('compare',this)">Vs. mis precios</button>
+      <button class="tab-btn" onclick="switchTab('alerts',this)">Alertas <span id="alerts-count"></span></button>
+      <button class="tab-btn" onclick="switchTab('keywords',this)">Keywords</button>
+      <button class="tab-btn" onclick="switchTab('sellers',this)">Vendedores</button>
+      <button class="tab-btn" onclick="switchTab('export',this)">Exportar</button>
+    </div>
+    <div id="tab-products">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div class="section-label" style="margin:0">// prioridad ads = ventas × precio × envío</div>
+        <select id="filter-seller" onchange="renderProductsTable()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 9px;outline:none;cursor:pointer;"><option value="">Todos</option></select>
+      </div>
+      <div class="products-table-wrap">
+        <table class="products-table">
+          <thead><tr>
+            <th onclick="sortTable('priority')" id="th-priority"># ADS</th>
+            <th onclick="sortTable('title')" id="th-title">PRODUCTO</th>
+            <th onclick="sortTable('seller')" id="th-seller">VENDEDOR</th>
+            <th onclick="sortTable('sales')" id="th-sales">VENTAS</th>
+            <th onclick="sortTable('price')" id="th-price">PRECIO</th>
+            <th>SHIP</th><th>VER</th>
+          </tr></thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="tab-compare" style="display:none;">
+      <div class="section-label">// tus precios vs competencia</div>
+      <div id="compare-content"><div class="empty-state"><div class="empty-icon">🔄</div><div class="empty-title">Cargando tus publicaciones...</div></div></div>
+    </div>
+    <div id="tab-alerts" style="display:none;">
+      <div class="section-label">// productos nuevos y cambios de precio vs último análisis</div>
+      <div class="alerts-list" id="alerts-list"></div>
+    </div>
+    <div id="tab-keywords" style="display:none;">
+      <div class="section-label">// keywords de los títulos más vendidos — usalas en tus publicaciones</div>
+      <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:14px;">Más grande = más frecuente en productos top de la competencia.</div>
+      <div class="keywords-grid" id="keywords-grid"></div>
+    </div>
+    <div id="tab-sellers" style="display:none;">
+      <div class="section-label">// comparativa por vendedor</div>
+      <div class="sellers-grid" id="sellers-grid"></div>
+    </div>
+    <div id="tab-export" style="display:none;">
+      <div class="section-label">// exportar análisis</div>
+      <div class="export-grid">
+        <div class="export-card" onclick="exportHTML()"><div class="export-icon">📄</div><div class="export-name">Reporte HTML</div><div class="export-desc">Con análisis IA</div></div>
+        <div class="export-card" onclick="exportCSV()"><div class="export-icon">📊</div><div class="export-name">CSV Productos</div><div class="export-desc">Con prioridad ads</div></div>
+        <div class="export-card" onclick="exportKeywordsCSV()"><div class="export-icon">🔑</div><div class="export-name">CSV Keywords</div><div class="export-desc">Rankeadas</div></div>
+        <div class="export-card" onclick="exportSimpleList()"><div class="export-icon">📋</div><div class="export-name">Lista ads</div><div class="export-desc">Top 20 con acción</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+<div id="modal" class="modal-overlay" style="display:none;" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="modal-title">Editar</span><button class="modal-close" onclick="closeModalDirect()">✕</button></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+<script>
+const MY_USER_KEY='lustgrow_my_user',COMPETITORS_KEY='lustgrow_competitors',SNAPSHOT_KEY='lustgrow_snapshot';
+let myUser=localStorage.getItem(MY_USER_KEY)||'LUST GROWSHOP';
+let competitors=[],allProducts=[],myProducts=[],aiAdviceText='',sortKey='priority',sortDir='desc',alerts=[];
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('my-user-display').textContent=myUser;
+  loadSaved();
+  const d=new Date(),months=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  document.getElementById('date-badge').textContent=`${months[d.getMonth()]} ${d.getFullYear()}`;
+});
+function loadSaved(){
+  const s=localStorage.getItem(COMPETITORS_KEY);
+  if(s){try{JSON.parse(s).forEach(v=>competitors.push({id:n(),value:v,status:'empty'}));}catch(e){}}
+  while(competitors.length<4)competitors.push({id:n(),value:'',status:'empty'});
+  renderList();
+}
+function saveCmp(){localStorage.setItem(COMPETITORS_KEY,JSON.stringify(competitors.filter(c=>c.value).map(c=>c.value)));}
+function n(){return Date.now()+Math.random();}
+function addCompetitor(){if(competitors.length>=15)return;competitors.push({id:n(),value:'',status:'empty'});renderList();}
+function removeCompetitor(id){competitors=competitors.filter(c=>c.id!==id);renderList();saveCmp();}
+function clearAll(){competitors=[];for(let i=0;i<4;i++)competitors.push({id:n(),value:'',status:'empty'});renderList();saveCmp();}
+function renderList(){
+  document.getElementById('competitor-list').innerHTML=competitors.map(c=>`
+    <div class="competitor-item ${c.status}" id="comp-${c.id}">
+      <input class="comp-input" type="text" placeholder="usuario_ml" value="${esc(c.value)}"
+        oninput="upd(${c.id},this.value)" onkeydown="if(event.key==='Enter')runAnalysis()"/>
+      <div class="comp-status"></div>
+      <button class="comp-remove" onclick="removeCompetitor(${c.id})">×</button>
+    </div>`).join('');
+}
+function upd(id,val){const c=competitors.find(x=>x.id===id);if(c){c.value=val.trim();saveCmp();}}
+function setSt(id,st){const c=competitors.find(x=>x.id===id);if(c)c.status=st;const el=document.getElementById(`comp-${id}`);if(el)el.className=`competitor-item ${st}`;}
+function editMyUser(){
+  document.getElementById('modal-title').textContent='Tu usuario de MercadoLibre';
+  document.getElementById('modal-body').innerHTML=`
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px;font-family:var(--mono);">Ingresá tu usuario para comparar precios.</p>
+    <input id="myi" type="text" value="${esc(myUser)}" style="width:100%;background:var(--card);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:13px;padding:11px;outline:none;margin-bottom:12px;" placeholder="tu_usuario_ml"/>
+    <button class="btn btn-primary" style="width:100%" onclick="saveMyUser()">Guardar</button>`;
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>document.getElementById('myi')?.focus(),100);
+}
+function saveMyUser(){const v=document.getElementById('myi')?.value?.trim();if(!v)return;myUser=v;localStorage.setItem(MY_USER_KEY,myUser);document.getElementById('my-user-display').textContent=myUser;closeModalDirect();}
+async function runAnalysis(){
+  const active=competitors.filter(c=>c.value);
+  if(!active.length){alert('Ingresá al menos un competidor');return;}
+  document.getElementById('btn-analyze').disabled=true;
+  document.getElementById('progress-wrap').style.display='block';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('status-badge').textContent='ANALIZANDO';
+  document.getElementById('status-badge').className='badge badge-orange';
+  allProducts=[];alerts=[];
+  active.forEach(c=>setSt(c.id,'loading'));
+  let prev={};try{prev=JSON.parse(localStorage.getItem(SNAPSHOT_KEY)||'{}');}catch(e){}
+  let done=0;
+  const res=await Promise.allSettled(active.map(c=>fetchSeller(c)));
+  res.forEach((r,i)=>{
+    const c=active[i];
+    if(r.status==='fulfilled'&&r.value.length){
+      allProducts.push(...r.value);setSt(c.id,'done');
+      r.value.forEach(p=>{
+        if(!prev[p.id])alerts.push({type:'new',title:p.title,seller:c.value,price:p.price,time:'Hoy'});
+        else if(Math.abs(prev[p.id]-(p.price||0))/(prev[p.id]||1)>0.05)alerts.push({type:'price',title:p.title,seller:c.value,price:p.price,diff:(p.price||0)-prev[p.id],time:'Hoy'});
+      });
+    }else setSt(c.id,'error');
+    done++;
+    document.getElementById('progress-fill').style.width=Math.round(done/active.length*100)+'%';
+    document.getElementById('progress-text').textContent=`Procesando ${done}/${active.length} vendedores...`;
+  });
+  const snap={};allProducts.forEach(p=>{snap[p.id]=p.price;});localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snap));
+  if(!allProducts.length){
+    document.getElementById('progress-text').textContent='⚠ No se pudo obtener datos. Verificá los usuarios.';
+    document.getElementById('btn-analyze').disabled=false;
+    document.getElementById('status-badge').textContent='ERROR';
+    document.getElementById('status-badge').className='badge badge-red';
+    return;
+  }
+  allProducts.sort((a,b)=>(b.sold_quantity||0)-(a.sold_quantity||0));
+  document.getElementById('progress-text').textContent=`✓ ${allProducts.length} productos. Cargando tus publicaciones y generando estrategia IA...`;
+  fetchMyProds();
+  renderStats();renderProductsTable();renderKeywords();renderSellers(active);renderAlerts();populateFilter(active);
+  document.getElementById('results-section').style.display='block';
+  document.getElementById('results-section').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('status-badge').textContent='LISTO';
+  document.getElementById('status-badge').className='badge badge-green';
+  document.getElementById('btn-analyze').disabled=false;
+  await genAI(active);
+}
+async function fetchSeller(competitor){
+  try{
+    const nick=competitor.value.trim().replace(/\s+/g,'+');
+    const r=await fetch(`https://api.mercadolibre.com/sites/MLA/search?nickname=${nick}&limit=1`);
+    const d=await r.json();
+    const sid=d.seller_id||d.results?.[0]?.seller?.id;
+    if(!sid)return[];
+    const r2=await fetch(`https://api.mercadolibre.com/sites/MLA/search?seller_id=${sid}&limit=50&sort=sold_quantity_desc`);
+    const d2=await r2.json();
+    return(d2.results||[]).map(p=>({...p,_seller:competitor.value}));
+  }catch(e){return[];}
+}
+async function fetchMyProds(){
+  try{
+    const nick=myUser.trim().replace(/\s+/g,'+');
+    const r=await fetch(`https://api.mercadolibre.com/sites/MLA/search?nickname=${nick}&limit=1`);
+    const d=await r.json();
+    const sid=d.seller_id||d.results?.[0]?.seller?.id;
+    if(!sid){renderCompare([]);return;}
+    const r2=await fetch(`https://api.mercadolibre.com/sites/MLA/search?seller_id=${sid}&limit=50`);
+    const d2=await r2.json();
+    myProducts=d2.results||[];renderCompare(myProducts);
+  }catch(e){renderCompare([]);}
+}
+function pri(p){const s=p.sold_quantity||0,pr=p.price||0,fs=p.shipping?.free_shipping?1.2:1,pt=pr>10000?1.5:pr>3000?1.2:pr>500?1.0:0.7;return Math.round(s*pt*fs);}
+function renderStats(){
+  const ts=allProducts.reduce((s,p)=>s+(p.sold_quantity||0),0);
+  const ap=allProducts.reduce((s,p)=>s+(p.price||0),0)/allProducts.length;
+  const fsp=Math.round(allProducts.filter(p=>p.shipping?.free_shipping).length/allProducts.length*100);
+  const us=[...new Set(allProducts.map(p=>p._seller))].length;
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-cell"><div class="stat-val yellow">${allProducts.length}</div><div class="stat-lbl">publicaciones</div></div>
+    <div class="stat-cell"><div class="stat-val blue">${ts.toLocaleString('es-AR')}</div><div class="stat-lbl">ventas totales</div></div>
+    <div class="stat-cell"><div class="stat-val green">$${Math.round(ap).toLocaleString('es-AR')}</div><div class="stat-lbl">precio prom.</div></div>
+    <div class="stat-cell"><div class="stat-val orange">${fsp}%</div><div class="stat-lbl">envío gratis</div></div>
+    <div class="stat-cell"><div class="stat-val purple">${us}</div><div class="stat-lbl">vendedores</div></div>
+    <div class="stat-cell"><div class="stat-val yellow">${(allProducts[0]?.sold_quantity||0).toLocaleString('es-AR')}</div><div class="stat-lbl">max ventas</div></div>`;
+}
+function renderProductsTable(){
+  const fs=document.getElementById('filter-seller')?.value||'';
+  let prods=fs?allProducts.filter(p=>p._seller===fs):[...allProducts];
+  const maxP=Math.max(...prods.map(p=>pri(p)));
+  prods.sort((a,b)=>{
+    let va,vb;
+    if(sortKey==='priority'){va=pri(a);vb=pri(b);}
+    else if(sortKey==='sales'){va=a.sold_quantity||0;vb=b.sold_quantity||0;}
+    else if(sortKey==='price'){va=a.price||0;vb=b.price||0;}
+    else if(sortKey==='title'){va=a.title||'';vb=b.title||'';return sortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);}
+    else if(sortKey==='seller'){va=a._seller||'';vb=b._seller||'';return sortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);}
+    return sortDir==='asc'?va-vb:vb-va;
+  });
+  document.getElementById('products-tbody').innerHTML=prods.slice(0,80).map((p,i)=>{
+    const pv=pri(p),pct=maxP>0?Math.round(pv/maxP*100):0;
+    const col=pct>60?'var(--green)':pct>30?'var(--accent)':'var(--text3)';
+    const s=p.sold_quantity||0;
+    return`<tr>
+      <td><div class="priority-bar"><span style="font-family:var(--mono);font-size:9px;color:${col};width:16px;">${i+1}</span><div class="priority-fill" style="width:${Math.max(pct*0.5,2)}px;background:${col};"></div></div></td>
+      <td class="td-title" title="${esc(p.title)}">${esc(p.title)}</td>
+      <td class="td-seller">${esc(p._seller)}</td>
+      <td style="font-weight:700;font-size:11px;color:${s>100?'var(--green)':s>20?'var(--accent)':'var(--text)'}">${s.toLocaleString('es-AR')}</td>
+      <td class="td-price-comp">${p.price?'$'+Math.round(p.price).toLocaleString('es-AR'):'—'}</td>
+      <td>${p.shipping?.free_shipping?'<span class="badge badge-green">✓</span>':'<span style="color:var(--text3);font-size:9px;">—</span>'}</td>
+      <td><a href="${p.permalink}" target="_blank" class="badge badge-blue" style="text-decoration:none;cursor:pointer;">→</a></td>
+    </tr>`;
+  }).join('');
+}
+function sortTable(key){
+  if(sortKey===key)sortDir=sortDir==='desc'?'asc':'desc';else{sortKey=key;sortDir='desc';}
+  document.querySelectorAll('.products-table th').forEach(th=>th.classList.remove('sorted'));
+  document.getElementById(`th-${key}`)?.classList.add('sorted');
+  renderProductsTable();
+}
+function renderCompare(myProds){
+  if(!myProds.length){document.getElementById('compare-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No se encontraron tus publicaciones</div><div class="empty-sub">Verificá tu usuario arriba</div></div>`;return;}
+  const matches=[];
+  myProds.forEach(mine=>{
+    const myW=new Set(mine.title.toLowerCase().split(/\s+/).filter(w=>w.length>3));
+    let best=null,bestS=0;
+    allProducts.forEach(comp=>{const cW=comp.title.toLowerCase().split(/\s+/).filter(w=>w.length>3);const sh=cW.filter(w=>myW.has(w)).length;const score=sh/Math.max(myW.size,cW.length);if(score>bestS&&score>0.3){bestS=score;best=comp;}});
+    if(best){const diff=mine.price-best.price;const pct=best.price>0?Math.round(diff/best.price*100):0;matches.push({mine,comp:best,diff,pct});}
+  });
+  if(!matches.length){document.getElementById('compare-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🤔</div><div class="empty-title">Sin productos similares</div><div class="empty-sub">Los competidores no tienen productos similares a los tuyos</div></div>`;return;}
+  const moreExp=matches.filter(m=>m.diff>0).length,cheaper=matches.filter(m=>m.diff<0).length;
+  let html=`<div class="comparison-grid" style="margin-bottom:18px;">
+    <div class="comp-card"><div class="comp-card-title">Tus productos</div><div class="comp-card-val" style="color:var(--blue)">${myProds.length}</div></div>
+    <div class="comp-card"><div class="comp-card-title">Comparaciones</div><div class="comp-card-val" style="color:var(--green)">${matches.length}</div></div>
+    <div class="comp-card"><div class="comp-card-title">Sos más caro</div><div class="comp-card-val" style="color:var(--red)">${moreExp}</div></div>
+    <div class="comp-card"><div class="comp-card-title">Sos más barato</div><div class="comp-card-val" style="color:var(--green)">${cheaper}</div></div>
+  </div>
+  <div class="products-table-wrap"><table class="products-table"><thead><tr><th>TU PRODUCTO</th><th>COMPETIDOR</th><th>TU PRECIO</th><th>COMP</th><th>DIFERENCIA</th><th>ACCIÓN</th></tr></thead><tbody>`;
+  matches.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct)).forEach(m=>{
+    const gc=m.diff>0?'price-gap-bad':m.diff<0?'price-gap-good':'price-gap-ok';
+    const gt=m.diff>0?`▲ ${m.pct}% más caro`:m.diff<0?`▼ ${Math.abs(m.pct)}% más barato`:'igual';
+    const act=m.diff>m.comp.price*0.1?'<span class="badge badge-red">Bajá precio</span>':m.diff<-m.comp.price*0.15?'<span class="badge badge-green">Podés subir</span>':'<span class="badge badge-yellow">OK</span>';
+    html+=`<tr><td class="td-title" style="max-width:140px" title="${esc(m.mine.title)}">${esc(m.mine.title)}</td><td class="td-seller">${esc(m.comp._seller)}</td><td style="font-weight:700;">$${Math.round(m.mine.price).toLocaleString('es-AR')}</td><td class="td-price-comp">$${Math.round(m.comp.price).toLocaleString('es-AR')}</td><td class="${gc}" style="font-family:var(--mono);font-size:10px;">${gt}</td><td>${act}</td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('compare-content').innerHTML=html;
+}
+function renderAlerts(){
+  const cnt=alerts.length;
+  document.getElementById('alerts-count').textContent=cnt>0?`(${cnt})`:'';
+  if(!cnt){document.getElementById('alerts-list').innerHTML=`<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Sin alertas nuevas</div><div class="empty-sub">La próxima vez vas a ver cambios vs este análisis</div></div>`;return;}
+  document.getElementById('alerts-list').innerHTML=alerts.slice(0,30).map(a=>{
+    if(a.type==='new')return`<div class="alert-item new"><span class="alert-item-icon">🆕</span><div class="alert-item-body"><div class="alert-item-title">${esc(a.title)}</div><div class="alert-item-sub">${esc(a.seller)} · $${Math.round(a.price||0).toLocaleString('es-AR')}</div></div><span class="alert-item-time">${a.time}</span></div>`;
+    const sg=a.diff>0?'▲':'▼';
+    return`<div class="alert-item price"><span class="alert-item-icon">💰</span><div class="alert-item-body"><div class="alert-item-title">${esc(a.title)}</div><div class="alert-item-sub">${esc(a.seller)} · ${sg} $${Math.abs(Math.round(a.diff||0)).toLocaleString('es-AR')} → $${Math.round(a.price||0).toLocaleString('es-AR')}</div></div><span class="alert-item-time">${a.time}</span></div>`;
+  }).join('');
+}
+function renderKeywords(){
+  const stop=new Set(['con','para','de','la','el','en','los','las','un','una','por','del','al','se','y','o','a','que','es','su','no','kit','pack','x','cm','ml','gr','kg','lt','set']);
+  const freq={};
+  allProducts.slice(0,60).forEach(p=>(p.title||'').toLowerCase().replace(/[^a-záéíóúüñ\s]/gi,'').split(/\s+/).filter(w=>w.length>3&&!stop.has(w)).forEach(w=>{freq[w]=(freq[w]||0)+1;}));
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,30);
+  const max=sorted[0]?.[1]||1;
+  const colors=[{bg:'var(--green-dim)',color:'var(--green)',border:'rgba(0,224,158,0.2)'},{bg:'var(--blue-dim)',color:'var(--blue)',border:'rgba(79,142,247,0.2)'},{bg:'var(--accent-dim)',color:'var(--accent)',border:'rgba(255,225,53,0.2)'},{bg:'rgba(181,122,255,0.08)',color:'var(--purple)',border:'rgba(181,122,255,0.2)'}];
+  document.getElementById('keywords-grid').innerHTML=sorted.map(([w,c],i)=>{const col=colors[Math.floor(i/8)%colors.length];const sz=11+Math.round(c/max*5);return`<div class="kw-chip" style="background:${col.bg};color:${col.color};border-color:${col.border};font-size:${sz}px;">${esc(w)}<span class="kw-count">${c}</span></div>`;}).join('');
+}
+function renderSellers(active){
+  document.getElementById('sellers-grid').innerHTML=active.filter(c=>c.status==='done').map(c=>{
+    const prods=allProducts.filter(p=>p._seller===c.value);
+    const ts=prods.reduce((s,p)=>s+(p.sold_quantity||0),0);
+    const ap=prods.length?prods.reduce((s,p)=>s+(p.price||0),0)/prods.length:0;
+    const top=[...prods].sort((a,b)=>(b.sold_quantity||0)-(a.sold_quantity||0))[0];
+    const fs2=prods.filter(p=>p.shipping?.free_shipping).length;
+    return`<div class="seller-card"><div class="seller-name">${esc(c.value)}</div><span class="badge badge-green">${prods.length} productos</span><div class="seller-stats"><div class="seller-stat-row"><span>Ventas totales</span><span>${ts.toLocaleString('es-AR')}</span></div><div class="seller-stat-row"><span>Precio promedio</span><span>$${Math.round(ap).toLocaleString('es-AR')}</span></div><div class="seller-stat-row"><span>Envío gratis</span><span>${fs2} prods</span></div><div class="seller-stat-row"><span>Top producto</span><span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc((top?.title||'N/A').slice(0,18))}…</span></div></div></div>`;
+  }).join('');
+}
+function populateFilter(active){
+  document.getElementById('filter-seller').innerHTML='<option value="">Todos</option>'+active.filter(c=>c.status==='done').map(c=>`<option value="${esc(c.value)}">${esc(c.value)}</option>`).join('');
+}
+function switchTab(tab,btn){
+  ['products','compare','alerts','keywords','sellers','export'].forEach(t=>document.getElementById(`tab-${t}`).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+async function genAI(active){
+  const top5=allProducts.slice(0,5);
+  const ts=allProducts.reduce((s,p)=>s+(p.sold_quantity||0),0);
+  const ap=Math.round(allProducts.reduce((s,p)=>s+(p.price||0),0)/allProducts.length);
+  const fsp=Math.round(allProducts.filter(p=>p.shipping?.free_shipping).length/allProducts.length*100);
+  const sellers=active.filter(c=>c.status==='done').map(c=>c.value).join(', ');
+  const stop=new Set(['con','para','de','la','el','en','los','las','un','una','por','del','al']);
+  const freq={};allProducts.slice(0,40).forEach(p=>(p.title||'').toLowerCase().replace(/[^a-záéíóúüñ\s]/gi,'').split(/\s+/).filter(w=>w.length>3&&!stop.has(w)).forEach(w=>{freq[w]=(freq[w]||0)+1;}));
+  const topKws=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([w])=>w).join(', ');
+  const myInfo=myProducts.length>0?`Mis publicaciones: ${myProducts.length} productos, precio promedio $${Math.round(myProducts.reduce((s,p)=>s+(p.price||0),0)/myProducts.length).toLocaleString('es-AR')}`:'Mis publicaciones no disponibles';
+  const prompt=`Sos un experto en MercadoLibre Argentina y growshop cannabis. Analizaste la competencia de LUST GROWSHOP (lustgrow.com.ar) en ${new Date().toLocaleDateString('es-AR',{month:'long',year:'numeric'})}.
+DATOS REALES DEL ANÁLISIS:
+- Competidores: ${sellers}
+- Publicaciones relevadas: ${allProducts.length} | Ventas acumuladas: ${ts.toLocaleString('es-AR')} | Precio promedio: $${ap.toLocaleString('es-AR')} | Con envío gratis: ${fsp}%
+- Keywords más usadas en títulos top: ${topKws}
+- Top 5 productos más vendidos: ${top5.map(p=>`"${p.title}" (${p.sold_quantity||0} ventas, $${Math.round(p.price||0).toLocaleString('es-AR')})`).join(' | ')}
+- ${myInfo}
+CONTEXTO ML ARGENTINA ${new Date().getFullYear()}: Algoritmo prioriza conversión y envío gratis. Product Ads tiene mejor ROI en productos con +10 ventas previas. El mercado growshop está en expansión con alta competencia en sustratos y fertilizantes. Compradores cannabis medicinal priorizan precio y reputación.
+Generá estrategia ESPECÍFICA y ACCIONABLE para que LUST GROWSHOP supere a sus competidores. Respondé ÚNICAMENTE con JSON sin backticks ni texto extra:
+{"precios":{"titulo":"Estrategia de precios","cuerpo":"consejo concreto basado en los datos"},"keywords":{"titulo":"Títulos y keywords","cuerpo":"consejo concreto"},"catalogo":{"titulo":"Qué agregar al catálogo","cuerpo":"consejo concreto"},"ads":{"titulo":"Presupuesto de ads","cuerpo":"consejo concreto"},"reputacion":{"titulo":"Reputación y ventas","cuerpo":"consejo concreto"},"tendencias":{"titulo":"Tendencias ML ahora","cuerpo":"consejo concreto basado en tendencias actuales del mercado"}}`;
+  const aiDiv=document.getElementById('ai-content');
+  aiDiv.innerHTML='<span style="font-family:var(--mono);font-size:11px;color:var(--text3);">Analizando datos y generando estrategia... <span class="cursor"></span></span>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'';
+    aiAdviceText=text;
+    let parsed;try{parsed=JSON.parse(text.replace(/```json|```/g,'').trim());}catch(e){parsed=null;}
+    if(parsed){
+      const clrs={precios:'',keywords:'blue',catalogo:'green',ads:'',reputacion:'purple',tendencias:'orange'};
+      const icons={precios:'💰',keywords:'🔑',catalogo:'📦',ads:'🎯',reputacion:'⭐',tendencias:'📈'};
+      aiDiv.innerHTML=Object.entries(parsed).map(([k,v])=>`<div class="ai-section ${clrs[k]||''}"><div class="ai-section-title">${icons[k]||'•'} ${v.titulo}</div><div class="ai-section-body">${esc(v.cuerpo).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div>`).join('');
+    }else{
+      aiDiv.innerHTML=`<div class="ai-section"><div class="ai-section-body">${esc(text).replace(/\n/g,'<br>')}</div></div>`;
+    }
+  }catch(e){aiDiv.innerHTML='<span style="color:var(--red);font-size:12px;">Error generando análisis IA. Los datos de las tablas siguen disponibles.</span>';}
+}
+function exportCSV(){const rows=[['#','Título','Vendedor','Ventas','Precio','Envío Gratis','Prioridad Ads','URL']];allProducts.forEach((p,i)=>rows.push([i+1,`"${(p.title||'').replace(/"/g,'""')}"`,p._seller||'',p.sold_quantity||0,p.price||0,p.shipping?.free_shipping?'Sí':'No',pri(p),p.permalink||'']));dl(`lustgrow_competencia_${ds()}.csv`,rows.map(r=>r.join(',')).join('\n'),'text/csv');}
+function exportKeywordsCSV(){const stop=new Set(['con','para','de','la','el','en','los','las','un','una','por','del','al']);const freq={};allProducts.slice(0,60).forEach(p=>(p.title||'').toLowerCase().replace(/[^a-záéíóúüñ\s]/gi,'').split(/\s+/).filter(w=>w.length>3&&!stop.has(w)).forEach(w=>{freq[w]=(freq[w]||0)+1;}));const rows=[['Keyword','Frecuencia']];Object.entries(freq).sort((a,b)=>b[1]-a[1]).forEach(([w,c])=>rows.push([w,c]));dl(`lustgrow_keywords_${ds()}.csv`,rows.map(r=>r.join(',')).join('\n'),'text/csv');}
+function exportSimpleList(){let txt=`LUSTGROW — TOP 20 PRODUCTOS COMPETENCIA\n${new Date().toLocaleString('es-AR')}\n\n`;allProducts.slice(0,20).forEach((p,i)=>{const act=pri(p)>100?'🔥 ACTIVAR ADS YA':pri(p)>30?'⚡ TESTEAR':'💤 Monitorear';txt+=`${i+1}. ${p.title}\n   ${p._seller} | ${p.sold_quantity||0} ventas | $${Math.round(p.price||0).toLocaleString('es-AR')}\n   ${act}\n\n`;});if(aiAdviceText)txt+='\n--- ANÁLISIS IA ---\n'+aiAdviceText;dl(`lustgrow_lista_ads_${ds()}.txt`,txt,'text/plain');}
+function exportHTML(){const top=allProducts.slice(0,30);const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Lustgrow Reporte</title><style>body{background:#060608;color:#e2e2ee;font-family:'Segoe UI',sans-serif;padding:32px;max-width:900px;margin:0 auto}h1{color:#ffe135}h2{color:#4f8ef7;border-bottom:1px solid #1c1c28;padding-bottom:8px;margin:28px 0 12px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#111118;color:#44445a;text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px}td{padding:10px 12px;border-bottom:1px solid #1c1c28}pre{background:#111118;padding:16px;font-size:12px;line-height:1.7;color:#c8c8e0;white-space:pre-wrap}</style></head><body><h1>🌿 Lustgrow — Reporte Competencia</h1><p style="color:#4f8ef7;font-family:monospace;">${new Date().toLocaleString('es-AR')} · ${allProducts.length} publicaciones</p><h2>Análisis IA</h2><pre>${aiAdviceText||'No disponible'}</pre><h2>Top 30 Productos</h2><table><thead><tr><th>#</th><th>Producto</th><th>Vendedor</th><th>Ventas</th><th>Precio</th></tr></thead><tbody>${top.map((p,i)=>`<tr><td style="color:#ffe135">${i+1}</td><td>${esc(p.title)}</td><td style="font-family:monospace;color:#8888aa">${p._seller}</td><td style="color:${(p.sold_quantity||0)>50?'#00e09e':'#e2e2ee'};font-weight:bold">${(p.sold_quantity||0).toLocaleString('es-AR')}</td><td style="color:#4f8ef7;font-weight:bold">$${Math.round(p.price||0).toLocaleString('es-AR')}</td></tr>`).join('')}</tbody></table></body></html>`;dl(`lustgrow_reporte_${ds()}.html`,html,'text/html');}
+function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
+function ds(){const d=new Date();return`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;}
+function closeModal(e){if(e.target.id==='modal')closeModalDirect();}
+function closeModalDirect(){document.getElementById('modal').style.display='none';}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>

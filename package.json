@@ -1,0 +1,12 @@
+{
+  "name": "lustgrow-ml",
+  "version": "1.0.0",
+  "description": "Lustgrow ML Intelligence - Análisis de competencia MercadoLibre",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
